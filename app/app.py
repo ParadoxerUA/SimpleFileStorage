@@ -1,33 +1,18 @@
-import os
-
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask
 from werkzeug.utils import secure_filename
-from config import DebugConfig
-
-app = Flask(__name__)
-app.config.from_object(DebugConfig)
+from .views import bp
+from .models import db
 
 
-@app.route('/', methods=('GET', 'POST'))
-def index():
-    if request.method == 'POST':
-        print(request.files["file"])
-        # POSTing without form
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # No selected file 
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        else:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(request.url)
+def create_app(config):
+    app = Flask(__name__)
+    app.config.from_object(DebugConfig)
+    db.init_app(app)
+    app.register_blueprint(bp)
+    return app
 
-    return render_template('index.html')
 
 if __name__ == '__main__':
+    from config import DebugConfig
+    app = create_app(DebugConfig)
     app.run()
-

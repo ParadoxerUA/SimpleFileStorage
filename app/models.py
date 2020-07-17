@@ -1,12 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask import current_app
 from datetime import datetime
 import random
 import string
 db = SQLAlchemy()
 
 
-class File(db.Model):
+class FileStorage(db.Model):
+    __tablename__  = "file_storage"
+    
     file_id = db.Column(db.Integer, primary_key=True)
     file_url = db.Column(db.String(100), unique=True, nullable=False)
     file_path = db.Column(db.String(100), unique=True, nullable=False)
