@@ -28,14 +28,19 @@ def index():
 
     return render_template('index.html')
 
-@bp.route('/files/<file_id>')
+@bp.route('/files/<file_id>', methods=('GET', 'POST'))
 def download_file(file_id):
     try:
         file = File.get_file(file_id)
-        return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename=str(file.id),
-         as_attachment=True, attachment_filename=file.filename)
     except FileNotFoundError:
         abort(404)
+    
+    print("OK!")
+    if request.method == 'POST':    
+        return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename=str(file.id),
+        as_attachment=True, attachment_filename=file.filename)
+        
+    return render_template('filepage.html', expiration_time=file.expiration_time.strftime("%Y-%m-%d %H:%M:%S"))
 
 
 
