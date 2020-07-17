@@ -1,14 +1,15 @@
 from flask import Flask
-from werkzeug.utils import secure_filename
-from .views import bp
-from .models import db
+from views import bp
+from models import db
 
 
 def create_app(config):
     app = Flask(__name__)
-    app.config.from_object(DebugConfig)
+    app.config.from_object(config)
     db.init_app(app)
     app.register_blueprint(bp)
+    app.app_context().push()
+    db.create_all()
     return app
 
 

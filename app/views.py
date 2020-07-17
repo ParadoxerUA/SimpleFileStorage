@@ -1,4 +1,7 @@
-from flask import Blueprint, render_template, request, flash, redirect
+import os
+from flask import Blueprint, render_template, request, flash, redirect, current_app, send_from_directory, make_response, jsonify
+from werkzeug.utils import secure_filename
+from models import File
 
 bp = Blueprint('storage_blueprint', __name__)
 
@@ -17,7 +20,22 @@ def index():
             return redirect(request.url)
         else:
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(request.url)
+            expiration_date = request.form['expiration_date']
+            print(expiration_date)
+            new_filename = File.add_file(file.filename, expiration_date)
+            file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], str(new_filename)))
+            return make_response(jsonify({"data": {"Download URL": "127.0.0.1:5000/files/" + str(new_filename)}}))
 
     return render_template('index.html')
+
+@bp.route('/files/<file_id>')
+def download_file(file_id):
+    try:
+        file = File.get_file(file_id)
+        return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename=str(file.id),
+         as_attachment=True, attachment_filename=file.filename)
+    except FileNotFoundError:
+        abort(404)
+
+
+
