@@ -1,6 +1,7 @@
 import os
-from flask import Blueprint, render_template, request, flash, redirect, current_app, send_from_directory, make_response, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, current_app, send_from_directory, make_response, jsonify, abort
 from werkzeug.utils import secure_filename
+from sqlalchemy.orm.exc import NoResultFound
 from models import File
 from datetime import datetime, timedelta
 
@@ -36,16 +37,16 @@ def index():
 def download_file(file_id):
     try:
         file = File.get_file(file_id)
-    except FileNotFoundError:
+    except NoResultFound:
         abort(404)
     
     if request.method == 'POST':    
         return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename=str(file.id),
         as_attachment=True, attachment_filename=file.filename)
 
-    expiration_time = file.expiration_time - datetime.now()
+    expiration_time = file.expiration_time
     expiration_time -= timedelta(microseconds=expiration_time.microseconds)
-    return render_template('filepage.html', expiration_time=expiration_time)
+    return render_template('filepage.html', expiration_time=file.expiration_time, filename=file.filename)
 
 
 

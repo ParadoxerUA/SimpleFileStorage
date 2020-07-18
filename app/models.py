@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from sqlalchemy.orm.exc import NoResultFound
 db = SQLAlchemy()
 
 
@@ -19,5 +20,7 @@ class File(db.Model):
 
     @classmethod
     def get_file(cls, id):
-        return cls.query.filter_by(id=id).first()
+        file = cls.query.filter_by(id=id).first()
+        if not file:
+            raise NoResultFound
         
