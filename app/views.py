@@ -2,6 +2,7 @@ import os
 from flask import Blueprint, render_template, request, flash, redirect, current_app, send_from_directory, make_response, jsonify
 from werkzeug.utils import secure_filename
 from models import File
+from datetime import datetime, timedelta
 
 bp = Blueprint('storage_blueprint', __name__)
 
@@ -20,9 +21,12 @@ def index():
             return redirect(request.url)
         else:
             filename = secure_filename(file.filename)
-            expiration_date = request.form['expiration_date']
-            print(expiration_date)
-            new_filename = File.add_file(file.filename, expiration_date)
+            days = int(request.form['days'])
+            hours = int(request.form['hours'])
+            minutes = int(request.form['minutes'])
+            expiration_time = datetime.now() + timedelta(days=days, hours=hours, minutes=minutes)
+
+            new_filename = File.add_file(file.filename, expiration_time)
             file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], str(new_filename)))
             return make_response(jsonify({"data": {"Download URL": "127.0.0.1:5000/files/" + str(new_filename)}}))
 
@@ -39,8 +43,10 @@ def download_file(file_id):
     if request.method == 'POST':    
         return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename=str(file.id),
         as_attachment=True, attachment_filename=file.filename)
-        
-    return render_template('filepage.html', expiration_time=file.expiration_time.strftime("%Y-%m-%d %H:%M:%S"))
+
+    expiration_time = file.expiration_time - datetime.now()
+    expiration_time -= timedelta(microseconds=expiration_time.microseconds)
+    return render_template('filepage.html', expiration_time=expiration_time)
 
 
 
