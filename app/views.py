@@ -28,7 +28,7 @@ def index():
 
             new_filename = File.add_file(file.filename, expiration_time)
             file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], str(new_filename)))
-            return make_response(jsonify({"data": {"Download URL": "127.0.0.1:5000/files/" + str(new_filename)}}))
+            return jsonify({"data": {"download_url": "http://127.0.0.1:5000/files/" + str(new_filename)}})
 
     return render_template('index.html')
 
@@ -39,7 +39,6 @@ def download_file(file_id):
     except FileNotFoundError:
         abort(404)
     
-    print("OK!")
     if request.method == 'POST':    
         return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename=str(file.id),
         as_attachment=True, attachment_filename=file.filename)

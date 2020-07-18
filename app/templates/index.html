@@ -1,6 +1,11 @@
 <!doctype html>
-<form  method = "POST" enctype = "multipart/form-data">
-    <input type=file name="file" />
+<head>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+</head>
+
+<body>
+<form  method = "POST" id="file-form" enctype = "multipart/form-data">
+    <input type=file name="file" id="file" />
 
 
     <label for="days">Days:</label>
@@ -18,5 +23,52 @@
     {% endfor %}
     </ul>
   {% endif %}
+  <p id=upload-complete></p>
+  <a id="file-url"></a>
+  
 {% endwith %}
+
+
 </form>
+<script>
+  function validateForm() {
+    // set of input validations
+    [days, hours, minutes] = [$("input#days").val(), $("input#hours").val(), $("input#minutes").val()];
+    if (!(days && hours && minutes) || (days == hours == minutes == 0)) {
+      alert('specify file lifetime!');
+      return false;
+    }
+    if ($("input#file").val() === "") {
+      alert("Please select file to upload");
+      return false;
+    }
+
+    return true;
+  }
+  
+  $("form#file-form").submit(function(e) {
+    e.preventDefault();   
+    var formData = new FormData(this);
+
+    if (validateForm()) {
+      $.ajax({
+          url: window.location.pathname,
+          type: 'POST',
+          // async: false,
+          data: formData,
+          success: function (data) {
+            var file_url = data['data']['download_url'];
+            $('#file-form')[0].reset();
+            $("p#upload-complete").html("Uploading is complete! You can download the file from the link below.");
+            $("a#file-url").attr("href", file_url);
+            $("a#file-url").text(file_url);
+
+          },
+          cache: false,
+          contentType: false,
+          processData: false
+      });
+    }
+});
+</script>
+</body>
