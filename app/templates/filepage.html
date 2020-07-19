@@ -1,10 +1,33 @@
 <!doctype html>
+<head>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+</head>
 <h2>{{ filename }}<h2>
-<h3>
-    Expires in:
-    <br/>
-    {{ expiration_time }}
-</h3>
+
+<p id="timer"></p>
 <form method = "POST">
     <input type="submit", value=Download>
 </form>
+
+<script>
+    var countDownDate = new Date({{expiration_time}}).getTime();
+    
+
+    var x = setInterval(function() {
+    
+      var now = new Date().getTime();
+      var distance = countDownDate - now;
+    
+      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+      $("p#timer").text(days + "d " + hours + "h " + minutes + "m " + seconds + "s ");
+    
+      if (distance < 0) {
+        clearInterval(x);
+        $("p#timer").text("EXPIRED");
+      }
+    }, 1000);
+</script>

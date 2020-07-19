@@ -1,9 +1,11 @@
 import os
-from flask import Blueprint, render_template, request, flash, redirect, current_app, send_from_directory, make_response, jsonify, abort
+from flask import Blueprint, render_template, request, flash, redirect,  \
+                    current_app, send_from_directory, jsonify, abort
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm.exc import NoResultFound
 from models import File
 from datetime import datetime, timedelta
+
 
 bp = Blueprint('storage_blueprint', __name__)
 
@@ -45,8 +47,5 @@ def download_file(file_id):
         as_attachment=True, attachment_filename=file.filename)
 
     expiration_time = file.expiration_time
-    expiration_time -= timedelta(microseconds=expiration_time.microseconds)
-    return render_template('filepage.html', expiration_time=file.expiration_time, filename=file.filename)
-
-
-
+    expiration_time = expiration_time.timestamp() * 1000
+    return render_template('filepage.html', expiration_time=expiration_time, filename=file.filename)
